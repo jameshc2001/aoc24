@@ -1,7 +1,7 @@
 import re
 
 def part01(input):
-    rules, updates = [text.split("\n") for text in input.split("\n\n")]
+    rules, updates_text = [text.split("\n") for text in input.split("\n\n")]
 
     after = {}
     before = {}
@@ -11,25 +11,19 @@ def part01(input):
         after[left] = after.get(left, []) + [right]
         before[right] = before.get(right, []) + [left]
 
-    total = 0
-    for update in updates:
-        nums = [int(num) for num in re.findall(r"\d+", update)]
+    updates = [[int(num) for num in re.findall(r"\d+", update)] for update in updates_text]
+    correct_updates = [update for update in updates if (in_correct_order(after, before, update))]
+    return sum([update[len(update) // 2] for update in correct_updates])
 
-        correct = True
-        for index, current in enumerate(nums):
-            next_values = after.get(current, [])
-            prev_values = before.get(current, [])
-
-            for next in nums[index + 1:]:
-                if (next not in next_values): correct = False
-
-            for prev in nums[:index]:
-                if (prev not in prev_values): correct = False
-        
-        if (correct):
-            total += nums[len(nums) // 2]
-
-    return total
+def in_correct_order(after, before, update):
+    for index, current in enumerate(update):
+        next_values = after.get(current, [])
+        prev_values = before.get(current, [])
+        for next in update[index + 1:]:
+            if (next not in next_values): return False
+        for prev in update[:index]:
+            if (prev not in prev_values): return False
+    return True
 
 #TESTS
 
