@@ -1,4 +1,3 @@
-import unittest
 
 def part01(input):
     lines = input.split("\n")

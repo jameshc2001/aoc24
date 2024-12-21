@@ -1,4 +1,3 @@
-import unittest
 import collections
 
 def part01(input):
