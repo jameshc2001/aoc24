@@ -11,7 +11,6 @@ def execute_mul_instruction(instruction):
 
 def part02(input):
     instructions = re.findall(r"(?:mul\(\d+,\d+\))|(?:do\(\))|(?:don't\(\))", input)
-    print(instructions)
     multiplication_enabled = True
     total = 0
 
