@@ -7,16 +7,16 @@ def part01(input):
         for y in range(rows):
             if (grid[x, y] != "X"): continue
 
-            if ((safe_get(grid, x, y) + safe_get(grid, x + 1, y) + safe_get(grid, x + 2, y) + safe_get(grid, x + 3, y)) == "XMAS"): total += 1
-            if ((safe_get(grid, x, y) + safe_get(grid, x - 1, y) + safe_get(grid, x - 2, y) + safe_get(grid, x - 3, y)) == "XMAS"): total += 1
-            if ((safe_get(grid, x, y) + safe_get(grid, x, y + 1) + safe_get(grid, x, y + 2) + safe_get(grid, x, y + 3)) == "XMAS"): total += 1
-            if ((safe_get(grid, x, y) + safe_get(grid, x, y - 1) + safe_get(grid, x, y - 2) + safe_get(grid, x, y - 3)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x + 1, y) + get(grid, x + 2, y) + get(grid, x + 3, y)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x - 1, y) + get(grid, x - 2, y) + get(grid, x - 3, y)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x, y + 1) + get(grid, x, y + 2) + get(grid, x, y + 3)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x, y - 1) + get(grid, x, y - 2) + get(grid, x, y - 3)) == "XMAS"): total += 1
 
-            if ((safe_get(grid, x, y) + safe_get(grid, x + 1, y + 1) + safe_get(grid, x + 2, y + 2) + safe_get(grid, x + 3, y + 3)) == "XMAS"): total += 1
-            if ((safe_get(grid, x, y) + safe_get(grid, x - 1, y - 1) + safe_get(grid, x - 2, y - 2) + safe_get(grid, x - 3, y - 3)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x + 1, y + 1) + get(grid, x + 2, y + 2) + get(grid, x + 3, y + 3)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x - 1, y - 1) + get(grid, x - 2, y - 2) + get(grid, x - 3, y - 3)) == "XMAS"): total += 1
 
-            if ((safe_get(grid, x, y) + safe_get(grid, x + 1, y - 1) + safe_get(grid, x + 2, y - 2) + safe_get(grid, x + 3, y - 3)) == "XMAS"): total += 1
-            if ((safe_get(grid, x, y) + safe_get(grid, x - 1, y + 1) + safe_get(grid, x - 2, y + 2) + safe_get(grid, x - 3, y + 3)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x + 1, y - 1) + get(grid, x + 2, y - 2) + get(grid, x + 3, y - 3)) == "XMAS"): total += 1
+            if ((get(grid, x, y) + get(grid, x - 1, y + 1) + get(grid, x - 2, y + 2) + get(grid, x - 3, y + 3)) == "XMAS"): total += 1
 
     return total
 
@@ -28,9 +28,9 @@ def part02(input):
         for y in range(rows):
             if (grid[x, y] != "A"): continue
 
-            a = safe_get(grid, x - 1, y - 1) + "A" + safe_get(grid, x + 1, y + 1)
-            b = safe_get(grid, x + 1, y - 1) + "A" + safe_get(grid, x - 1, y + 1)
-            
+            a = get(grid, x - 1, y - 1) + "A" + get(grid, x + 1, y + 1)
+            b = get(grid, x + 1, y - 1) + "A" + get(grid, x - 1, y + 1)
+
             if (a in permutations and b in permutations): total += 1
     
     return total
@@ -47,7 +47,7 @@ def create_grid(input):
 
     return rows,cols,grid
 
-def safe_get(grid, x, y):
+def get(grid, x, y):
     a, b = grid.shape
     if (0 <= x < a and 0 <= y < b): return grid[x, y]
     return ""
