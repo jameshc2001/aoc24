@@ -27,25 +27,25 @@ def is_safe_part01(report):
     return True
 
 
-class Test(unittest.TestCase):
+#TESTS
 
-    sample = """7 6 4 2 1
+sample = """7 6 4 2 1
 1 2 7 8 9
 9 7 6 2 1
 1 3 2 4 5
 8 6 4 4 1
 1 3 6 7 9"""
 
-    def test_part01_sample(self):
-        self.assertEqual(2, part01(self.sample))
-    
-    def test_part01_input(self):
-        with open("src/inputs/day02.txt", "r") as f:
-            self.assertEqual(510, part01(f.read()))
+def test_part01_sample():
+    assert 2 == part01(sample)
 
-    def test_part02_sample(self):
-        self.assertEqual(4, part02(self.sample))
+def test_part01_input():
+    with open("src/inputs/day02.txt", "r") as f:
+        assert 510 == part01(f.read())
 
-    def test_part02_input(self):
-        with open("src/inputs/day02.txt", "r") as f:
-            self.assertEqual(553, part02(f.read()))
+def test_part02_sample():
+    assert 4 == part02(sample)
+
+def test_part02_input():
+    with open("src/inputs/day02.txt", "r") as f:
+        assert 553 == part02(f.read())

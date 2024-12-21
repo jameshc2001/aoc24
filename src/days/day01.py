@@ -22,25 +22,25 @@ def get_left_and_right(input):
         right.append(int(r))
     return left,right
 
-class Test(unittest.TestCase):
+#TESTS
 
-    sample = """3   4
+sample = """3   4
 4   3
 2   5
 1   3
 3   9
 3   3"""
 
-    def test_part01_sample(self):
-        self.assertEqual(11, part01(self.sample))
+def test_part01_sample():
+    assert 11 == part01(sample)
 
-    def test_part01_input(self):
-        with open("src/inputs/day01.txt", "r") as f:
-            self.assertEqual(1765812, part01(f.read()))
-    
-    def test_part02_sample(self):
-        self.assertEqual(31, part02(self.sample))
-    
-    def test_part02_input(self):
-        with open("src/inputs/day01.txt", "r") as f:
-            self.assertEqual(20520794, part02(f.read()))
+def test_part01_input():
+    with open("src/inputs/day01.txt", "r") as f:
+        assert 1765812 == part01(f.read())
+
+def test_part02_sample():
+    assert 31 == part02(sample)
+
+def test_part02_input():
+    with open("src/inputs/day01.txt", "r") as f:
+        assert 20520794 == part02(f.read())
