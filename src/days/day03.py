@@ -15,8 +15,8 @@ def part02(input):
 
     for instruction in instructions:
         if ("mul" in instruction and multiplication_enabled): total += execute_mul_instruction(instruction)
+        elif ("don\'t()" in instruction): multiplication_enabled = False
         elif ("do()" in instruction): multiplication_enabled = True
-        else: multiplication_enabled = False
 
     return total
 
