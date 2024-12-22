@@ -1,8 +1,48 @@
 import re
+from functools import cmp_to_key
 
 def part01(input):
     rules, updates_text = [text.split("\n") for text in input.split("\n\n")]
+    after, before = get_after_and_before(rules)
+    updates = [[int(num) for num in re.findall(r"\d+", update)] for update in updates_text]
+    correct_updates = [update for update in updates if (in_correct_order(after, before, update))]
+    return sum([update[len(update) // 2] for update in correct_updates])
 
+def part02(input):
+    rules, updates_text = [text.split("\n") for text in input.split("\n\n")]
+    after, before = get_after_and_before(rules)
+    updates = [[int(num) for num in re.findall(r"\d+", update)] for update in updates_text]
+    incorrect_updates = [update for update in updates if (not in_correct_order(after, before, update))]
+
+    def compare(a, b):
+        next_values = after.get(a, [])
+        prev_values = before.get(a, [])
+        if (b in next_values): return -1
+        if (b in prev_values): return 1
+        return 0
+    
+    corrected_updates = [sorted(update, key=cmp_to_key(compare)) for update in incorrect_updates]
+    return sum([update[len(update) // 2] for update in corrected_updates])
+
+def get_compare_func(rules):
+    after = {}
+    before = {}
+
+    for rule in rules:
+        left, right = [int(part) for part in rule.split("|")]
+        after[left] = after.get(left, []) + [right]
+        before[right] = before.get(right, []) + [left]
+    
+    def compare(a, b):
+        next_values = after.get(a, [])
+        prev_values = before.get(a, [])
+        if (b in next_values): return -1
+        if (b in prev_values): return 1
+        return 0
+    
+    return compare
+
+def get_after_and_before(rules):
     after = {}
     before = {}
 
@@ -11,9 +51,7 @@ def part01(input):
         after[left] = after.get(left, []) + [right]
         before[right] = before.get(right, []) + [left]
 
-    updates = [[int(num) for num in re.findall(r"\d+", update)] for update in updates_text]
-    correct_updates = [update for update in updates if (in_correct_order(after, before, update))]
-    return sum([update[len(update) // 2] for update in correct_updates])
+    return after, before
 
 def in_correct_order(after, before, update):
     for index, current in enumerate(update):
@@ -62,3 +100,10 @@ def test_part01_sample():
 def test_part01_input():
     with open("src/inputs/day05.txt", "r") as f:
         assert 4578 == part01(f.read())
+
+def test_part02_sample():
+    assert 123 == part02(sample)
+
+def test_part02_input():
+    with open("src/inputs/day05.txt", "r") as f:
+        assert 6179 == part02(f.read())
