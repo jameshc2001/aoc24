@@ -5,7 +5,7 @@ def part01(input):
     return sum(execute_mul_instruction(instruction) for instruction in instructions)
 
 def execute_mul_instruction(instruction):
-    numbers = re.findall("\d+", instruction)
+    numbers = re.findall(r"\d+", instruction)
     return int(numbers[0]) * int(numbers[1])
 
 def part02(input):

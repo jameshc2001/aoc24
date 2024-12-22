@@ -2,27 +2,21 @@ import re
 from functools import cmp_to_key
 
 def part01(input):
-    rules, updates_text = [text.split("\n") for text in input.split("\n\n")]
-    after, before = get_after_and_before(rules)
-    updates = [[int(num) for num in re.findall(r"\d+", update)] for update in updates_text]
-    correct_updates = [update for update in updates if (in_correct_order(after, before, update))]
+    updates, compare = get_updates_and_compare_function(input)
+    correct_updates = [update for update in updates if (sorted(update, key=cmp_to_key(compare)) == update)]
     return sum([update[len(update) // 2] for update in correct_updates])
 
 def part02(input):
-    rules, updates_text = [text.split("\n") for text in input.split("\n\n")]
-    after, before = get_after_and_before(rules)
-    updates = [[int(num) for num in re.findall(r"\d+", update)] for update in updates_text]
-    incorrect_updates = [update for update in updates if (not in_correct_order(after, before, update))]
-
-    def compare(a, b):
-        next_values = after.get(a, [])
-        prev_values = before.get(a, [])
-        if (b in next_values): return -1
-        if (b in prev_values): return 1
-        return 0
-    
-    corrected_updates = [sorted(update, key=cmp_to_key(compare)) for update in incorrect_updates]
+    updates, compare = get_updates_and_compare_function(input)
+    sorted_updates = [sorted(update, key=cmp_to_key(compare)) for update in updates]
+    corrected_updates = [update for index, update in enumerate(sorted_updates) if update != updates[index]]
     return sum([update[len(update) // 2] for update in corrected_updates])
+
+def get_updates_and_compare_function(input):
+    rules, updates_text = [text.split("\n") for text in input.split("\n\n")]
+    updates = [[int(num) for num in re.findall(r"\d+", update)] for update in updates_text]
+    compare = get_compare_func(rules)
+    return updates, compare
 
 def get_compare_func(rules):
     after = {}
@@ -41,27 +35,6 @@ def get_compare_func(rules):
         return 0
     
     return compare
-
-def get_after_and_before(rules):
-    after = {}
-    before = {}
-
-    for rule in rules:
-        left, right = [int(part) for part in rule.split("|")]
-        after[left] = after.get(left, []) + [right]
-        before[right] = before.get(right, []) + [left]
-
-    return after, before
-
-def in_correct_order(after, before, update):
-    for index, current in enumerate(update):
-        next_values = after.get(current, [])
-        prev_values = before.get(current, [])
-        for next in update[index + 1:]:
-            if (next not in next_values): return False
-        for prev in update[:index]:
-            if (prev not in prev_values): return False
-    return True
 
 #TESTS
 
