@@ -2,38 +2,29 @@ import numpy as np
 
 def part01(input):
     grid = create_grid(input)
-    max_x = grid.shape[1]
-    max_y = grid.shape[0]
+    max_y, max_x = grid.shape
 
     start_coords = np.where(grid == '^')
-    gx = start_coords[1][0]
-    gy = start_coords[0][0]
-    dx = 0
-    dy = -1
+    guard = (start_coords[1][0], start_coords[0][0])
+    direction = (0, -1)
 
-    visited = {(gx, gy)}
-    grid[gy, gx] = '0'
+    visited = {tuple(guard)}
+    grid[guard[1], guard[0]] = '0'
 
-    next_x = gx + dx
-    next_y = gy + dy
-    while (0 <= next_x < max_x and 0 <= next_y < max_y):
-        if (grid[next_y, next_x] == '#'):
-            if (dy == -1): dy = 0; dx = 1
-            elif (dy == 1): dy = 0; dx = -1
-            elif (dx == -1): dy = -1; dx = 0
-            elif (dx == 1): dy = 1; dx = 0
-
-            next_x = gx + dx
-            next_y = gy + dy
+    next = np.add(guard, direction)
+    while (0 <= next[0] < max_x and 0 <= next[1] < max_y):
+        if (grid[next[1], next[0]] == '#'):
+            if (direction == (0, -1)): direction = (1, 0)
+            elif (direction == (0, 1)): direction = (-1, 0)
+            elif (direction == (-1, 0)): direction = (0, -1)
+            elif (direction == (1, 0)): direction = (0, 1)
         
-        gx = gx + dx
-        gy = gy + dy
-        if (not (0 <= gx < max_x and 0 <= gy < max_y)): break
-        grid[gy, gx] = '0'
-        visited.add((gx, gy))
+        guard = np.add(guard, direction)
+        if (not (0 <= guard[0] < max_x and 0 <= guard[1] < max_y)): break
+        grid[guard[1], guard[0]] = '0'
+        visited.add(tuple(guard))
 
-        next_x = gx + dx
-        next_y = gy + dy
+        next = np.add(guard, direction)
     
     print(grid)
 
