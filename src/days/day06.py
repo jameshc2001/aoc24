@@ -7,7 +7,6 @@ def part01(input):
     start_coords = np.where(grid == '^')
     guard = (start_coords[1][0], start_coords[0][0])
     direction = (0, -1)
-    grid[guard[1], guard[0]] = '0'
 
     visited = get_path(grid, max_y, max_x, guard, direction)
     return len(visited)
@@ -22,7 +21,6 @@ def get_path(grid, max_y, max_x, guard, direction):
         
         guard = np.add(guard, direction)
         if (not in_grid(max_y, max_x, guard)): break
-        grid[guard[1], guard[0]] = '0'
         visited.add(tuple(guard))
     return visited
 
