@@ -12,7 +12,7 @@ def part01(input):
     grid[guard[1], guard[0]] = '0'
 
     next = np.add(guard, direction)
-    while (0 <= next[0] < max_x and 0 <= next[1] < max_y):
+    while (in_grid(max_y, max_x, next)):
         if (grid[next[1], next[0]] == '#'):
             if (direction == (0, -1)): direction = (1, 0)
             elif (direction == (0, 1)): direction = (-1, 0)
@@ -20,7 +20,7 @@ def part01(input):
             elif (direction == (1, 0)): direction = (0, 1)
         
         guard = np.add(guard, direction)
-        if (not (0 <= guard[0] < max_x and 0 <= guard[1] < max_y)): break
+        if (not in_grid(max_y, max_x, guard)): break
         grid[guard[1], guard[0]] = '0'
         visited.add(tuple(guard))
 
@@ -29,6 +29,9 @@ def part01(input):
     print(grid)
 
     return len(visited)
+
+def in_grid(max_y, max_x, position):
+    return 0 <= position[0] < max_x and 0 <= position[1] < max_y
 
 def create_grid(input):
     lines = input.split("\n")
