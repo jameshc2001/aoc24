@@ -1,15 +1,33 @@
 import numpy as np
 
 def part01(input):
+    grid, max_y, max_x, guard, direction = initial_parameters(input)
+    return len(get_path(grid, max_y, max_x, guard, direction))
+
+def part02(input):
+    grid, max_y, max_x, guard, direction = initial_parameters(input)
+    new_obstacle_positions = get_path(grid, max_y, max_x, guard, direction)
+    new_obstacle_positions.remove(guard)
+
+    total = 0
+    for position in new_obstacle_positions:
+        new_grid = np.array(grid)
+        new_grid[position[1], position[0]] = '#'
+        if (has_loop(grid, max_y, max_x, guard, direction)): total += 1
+
+    return total
+
+def has_loop(grid, max_y, max_x, guard, direction):
+    return False
+
+
+def initial_parameters(input):
     grid = create_grid(input)
     max_y, max_x = grid.shape
-
     start_coords = np.where(grid == '^')
     guard = (start_coords[1][0], start_coords[0][0])
     direction = (0, -1)
-
-    visited = get_path(grid, max_y, max_x, guard, direction)
-    return len(visited)
+    return grid,max_y,max_x,guard,direction
 
 def get_path(grid, max_y, max_x, guard, direction):
     visited = {tuple(guard)}
@@ -65,3 +83,6 @@ def test_part01_sample():
 def test_part01_input():
     with open("src/inputs/day06.txt", "r") as f:
         assert 4559 == part01(f.read())
+
+def test_part02_sample():
+    assert 6 == part02(sample)
