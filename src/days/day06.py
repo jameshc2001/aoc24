@@ -7,28 +7,28 @@ def part01(input):
     start_coords = np.where(grid == '^')
     guard = (start_coords[1][0], start_coords[0][0])
     direction = (0, -1)
-
     visited = {tuple(guard)}
     grid[guard[1], guard[0]] = '0'
-
-    next = np.add(guard, direction)
-    while (in_grid(max_y, max_x, next)):
-        if (grid[next[1], next[0]] == '#'):
-            if (direction == (0, -1)): direction = (1, 0)
-            elif (direction == (0, 1)): direction = (-1, 0)
-            elif (direction == (-1, 0)): direction = (0, -1)
-            elif (direction == (1, 0)): direction = (0, 1)
+    
+    while (True):
+        next = np.add(guard, direction)
+        while(in_grid(max_y, max_x, next) and grid[next[1], next[0]] == '#'):
+            direction = rotate_90_degrees(direction)
+            next = np.add(guard, direction)
         
         guard = np.add(guard, direction)
         if (not in_grid(max_y, max_x, guard)): break
         grid[guard[1], guard[0]] = '0'
         visited.add(tuple(guard))
 
-        next = np.add(guard, direction)
-    
-    print(grid)
-
     return len(visited)
+
+def rotate_90_degrees(direction):
+    if (direction == (0, -1)): return (1, 0)
+    elif (direction == (0, 1)): return (-1, 0)
+    elif (direction == (-1, 0)): return (0, -1)
+    elif (direction == (1, 0)): return (0, 1)
+    return direction
 
 def in_grid(max_y, max_x, position):
     return 0 <= position[0] < max_x and 0 <= position[1] < max_y
