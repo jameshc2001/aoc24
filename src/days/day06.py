@@ -7,9 +7,13 @@ def part01(input):
     start_coords = np.where(grid == '^')
     guard = (start_coords[1][0], start_coords[0][0])
     direction = (0, -1)
-    visited = {tuple(guard)}
     grid[guard[1], guard[0]] = '0'
-    
+
+    visited = get_path(grid, max_y, max_x, guard, direction)
+    return len(visited)
+
+def get_path(grid, max_y, max_x, guard, direction):
+    visited = {tuple(guard)}
     while (True):
         next = np.add(guard, direction)
         while(in_grid(max_y, max_x, next) and grid[next[1], next[0]] == '#'):
@@ -20,8 +24,7 @@ def part01(input):
         if (not in_grid(max_y, max_x, guard)): break
         grid[guard[1], guard[0]] = '0'
         visited.add(tuple(guard))
-
-    return len(visited)
+    return visited
 
 def rotate_90_degrees(direction):
     if (direction == (0, -1)): return (1, 0)
