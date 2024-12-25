@@ -1,19 +1,36 @@
 import re
 
-
 def part01(input):
     equations_text = [re.findall(r"\d+", equation) for equation in input.split("\n")]
     equations = [[int(number) for number in equation] for equation in equations_text]
-    return sum([equation[0] for equation in equations if is_valid(equation)])
+    return sum([equation[0] for equation in equations if is_valid_part01(equation)])
 
-def is_valid(equation):
-    return is_valid_recursive(equation[0], 0, equation[1:])
+def is_valid_part01(equation):
+    return is_valid_recursive_part01(equation[0], 0, equation[1:])
 
-def is_valid_recursive(goal, total, numbers):
+def is_valid_recursive_part01(goal, total, numbers):
     if (len(numbers) == 0): return goal == total
-    if (is_valid_recursive(goal, total + numbers[0], numbers[1:])): return True
-    elif (is_valid_recursive(goal, total * numbers[0], numbers[1:])): return True
+    if (is_valid_recursive_part01(goal, total + numbers[0], numbers[1:])): return True
+    elif (is_valid_recursive_part01(goal, total * numbers[0], numbers[1:])): return True
     else: return False
+
+def part02(input):
+    equations_text = [re.findall(r"\d+", equation) for equation in input.split("\n")]
+    equations = [[int(number) for number in equation] for equation in equations_text]
+    return sum([equation[0] for equation in equations if is_valid_part02(equation)])
+
+def is_valid_part02(equation):
+    return is_valid_recursive_part02(equation[0], 0, equation[1:])
+
+def is_valid_recursive_part02(goal, total, numbers):
+    if (total > goal): return False
+    if (len(numbers) == 0): return goal == total
+    if (is_valid_recursive_part02(goal, total + numbers[0], numbers[1:])): return True
+    elif (is_valid_recursive_part02(goal, total * numbers[0], numbers[1:])): return True
+    elif (is_valid_recursive_part02(goal, concatenate(total, numbers[0]), numbers[1:])): return True
+    else: return False
+
+def concatenate(a, b): return int(str(a) + str(b))
 
 #TESTS
 
@@ -33,3 +50,10 @@ def test_part01_sample():
 def test_part01_input():
     with open("src/inputs/day07.txt", "r") as f:
         assert 8401132154762 == part01(f.read())
+
+def test_part02_sample():
+    assert 11387 == part02(sample)
+
+def test_part02_input():
+    with open("src/inputs/day07.txt", "r") as f:
+        assert 95297119227552 == part02(f.read())
