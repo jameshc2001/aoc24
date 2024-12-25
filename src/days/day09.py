@@ -1,12 +1,12 @@
 
 def part01(input):
     disk = []
-    for i, c in enumerate(input):
-        if (i % 2 == 0): #used space
-            id = i // 2
-            for _ in range(int(c)): disk.append(str(id))
+    for index, blocks in enumerate(input):
+        if (index % 2 == 0): #used space
+            id = index // 2
+            for _ in range(int(blocks)): disk.append(str(id))
         else: #free space
-            for _ in range(int(c)): disk.append('.')
+            for _ in range(int(blocks)): disk.append('.')
     
     first_free_space = 0
     while(True):
