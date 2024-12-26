@@ -18,31 +18,18 @@ def part02(input):
     for file_id, file_size in files:
         for block_index, (block_id, block_size) in enumerate(disk):
             if (block_id != '.' and block_id == file_id): break
-            if (block_id == '.' and block_size >= file_size):    
+            if (block_id == '.' and block_size >= file_size):
 
                 file_index = disk.index((file_id, file_size))
+
                 if (block_index == file_index - 1): #special case for when no files to the left
                     disk[file_index], disk[block_index] = disk[block_index], disk[file_index] #swap with left
-                    right = file_index + 1
-                    if (right in range(len(disk)) and disk[right][0] == '.'): #merge empty spaces
-                        size = disk[right][1] + disk[file_index][1]
-                        disk[right] = ('.', 0)
-                        disk[file_index] = ('.', size)
                 else:
-                    #remove old file
-                    total_free_space = file_size
-                    for adjecent_index in [file_index - 1, file_index + 1]:
-                        if (adjecent_index in range(len(disk)) and disk[adjecent_index][0] == '.'):
-                            total_free_space += disk[adjecent_index][1]
-                            disk[adjecent_index] = ('.', 0)
-                    disk[file_index] = ('.', total_free_space)
-
-                    #move file
-                    disk[block_index] = (file_id, file_size)
+                    disk[file_index] = ('.', file_size) #remove old file
+                    disk[block_index] = (file_id, file_size) #move file
+                    #maintain spacing
                     remaining_free_space = block_size - file_size
                     disk = disk[0:block_index + 1] + [('.', remaining_free_space)] + disk[block_index + 1:]
-                
-                disk = [block for block in disk if block[1] > 0] #remove empty segments
 
                 break
     
@@ -94,9 +81,14 @@ def test_part01_input():
 def test_part02_sample():
     assert 2858 == part02(sample)
 
-def test_part02_break_it():
+def test_part02_special_case():
     assert 169 == part02("1313165")
 
 def test_part02_input():
     with open("src/inputs/day09.txt", "r") as f:
         assert 6381624803796 == part02(f.read())
+
+#took me way too long to realise that because we are moving from right to left
+#we do not care about the structure to the right of the current file
+
+#this would be much neater if each block kept track of its position in the 'exploded' disk
