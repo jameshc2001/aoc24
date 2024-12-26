@@ -1,65 +1,35 @@
 from collections import defaultdict
 
 def part01(input):
-    heights = defaultdict(lambda:-1)
-    lines = input.split("\n")
-    for y, line in enumerate(lines):
-        for x, height in enumerate(line):
-            heights[(x, y)] = int(height)
-    
+    heights = get_initial_parameters(input)
     reachable_nines = {}
-    for y in range(len(lines)):
-        for x in range(len(lines[0])):
-            if ((x, y) in reachable_nines): continue
-            calculate_reachable_nines((x, y), heights, reachable_nines)
-    
-    total = 0
-    for y in range(len(lines)):
-        for x in range(len(lines[0])):
-            if (heights[(x, y)] == 0):
-                total += len(reachable_nines[(x, y)])
+    for pos in list(heights.keys()):
+        if (pos in reachable_nines): continue
+        calculate_reachable_nines_part01(pos, heights, reachable_nines)
 
-    return total
+    return sum([len(reachable_nines[a]) for a in reachable_nines if heights[a] == 0])
 
-def calculate_reachable_nines(start, heights, reachable_nines):
+def calculate_reachable_nines_part01(start, heights, reachable_nines):
     current_height = heights[start]
     if (current_height == 9):
         reachable_nines[start] = set([start])
         return
 
-    neighbours = []
-    x, y = start
-    if (heights[(x + 1, y)] == current_height + 1): neighbours.append((x + 1, y))
-    if (heights[(x - 1, y)] == current_height + 1): neighbours.append((x - 1, y))
-    if (heights[(x, y + 1)] == current_height + 1): neighbours.append((x, y + 1))
-    if (heights[(x, y - 1)] == current_height + 1): neighbours.append((x, y - 1))
-    
     current_reachable_nines = set()
-    for neighbour in neighbours:
-        if (neighbour not in reachable_nines): calculate_reachable_nines(neighbour, heights, reachable_nines)
+    for neighbour in get_neighbours(start, heights, current_height):
+        if (neighbour not in reachable_nines): calculate_reachable_nines_part01(neighbour, heights, reachable_nines)
         current_reachable_nines.update(reachable_nines[neighbour])
     
     reachable_nines[start] = current_reachable_nines
 
 def part02(input):
-    heights = defaultdict(lambda:-1)
-    lines = input.split("\n")
-    for y, line in enumerate(lines):
-        for x, height in enumerate(line):
-            heights[(x, y)] = int(height)
-    
+    heights = get_initial_parameters(input)
     reachable_nines = {}
-    for y in range(len(lines)):
-        for x in range(len(lines[0])):
-            if ((x, y) in reachable_nines): continue
-            calculate_reachable_nines_part02((x, y), heights, reachable_nines)
+    for pos in list(heights.keys()):
+        if (pos in reachable_nines): continue
+        calculate_reachable_nines_part02(pos, heights, reachable_nines)
     
-    total = 0
-    for y in range(len(lines)):
-        for x in range(len(lines[0])):
-            if (heights[(x, y)] == 0): total += reachable_nines[(x, y)]
-
-    return total
+    return sum([reachable_nines[a] for a in reachable_nines if heights[a] == 0])
 
 def calculate_reachable_nines_part02(start, heights, reachable_nines):
     current_height = heights[start]
@@ -67,20 +37,29 @@ def calculate_reachable_nines_part02(start, heights, reachable_nines):
         reachable_nines[start] = 1
         return
 
+    current_reachable_nines = 0
+    for neighbour in get_neighbours(start, heights, current_height):
+        if (neighbour not in reachable_nines): calculate_reachable_nines_part02(neighbour, heights, reachable_nines)
+        current_reachable_nines += reachable_nines[neighbour]
+    
+    reachable_nines[start] = current_reachable_nines
+
+def get_neighbours(start, heights, current_height):
     neighbours = []
     x, y = start
     if (heights[(x + 1, y)] == current_height + 1): neighbours.append((x + 1, y))
     if (heights[(x - 1, y)] == current_height + 1): neighbours.append((x - 1, y))
     if (heights[(x, y + 1)] == current_height + 1): neighbours.append((x, y + 1))
     if (heights[(x, y - 1)] == current_height + 1): neighbours.append((x, y - 1))
-    
-    current_reachable_nines = 0
-    for neighbour in neighbours:
-        if (neighbour not in reachable_nines): calculate_reachable_nines_part02(neighbour, heights, reachable_nines)
-        current_reachable_nines += reachable_nines[neighbour]
-    
-    reachable_nines[start] = current_reachable_nines
+    return neighbours
 
+def get_initial_parameters(input):
+    heights = defaultdict(lambda:-1)
+    lines = input.split("\n")
+    for y, line in enumerate(lines):
+        for x, height in enumerate(line):
+            heights[(x, y)] = int(height)
+    return heights
 
 #TESTS
 
