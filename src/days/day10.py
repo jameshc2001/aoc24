@@ -41,6 +41,46 @@ def calculate_reachable_nines(start, heights, reachable_nines):
     
     reachable_nines[start] = current_reachable_nines
 
+def part02(input):
+    heights = defaultdict(lambda:-1)
+    lines = input.split("\n")
+    for y, line in enumerate(lines):
+        for x, height in enumerate(line):
+            heights[(x, y)] = int(height)
+    
+    reachable_nines = {}
+    for y in range(len(lines)):
+        for x in range(len(lines[0])):
+            if ((x, y) in reachable_nines): continue
+            calculate_reachable_nines_part02((x, y), heights, reachable_nines)
+    
+    total = 0
+    for y in range(len(lines)):
+        for x in range(len(lines[0])):
+            if (heights[(x, y)] == 0): total += reachable_nines[(x, y)]
+
+    return total
+
+def calculate_reachable_nines_part02(start, heights, reachable_nines):
+    current_height = heights[start]
+    if (current_height == 9):
+        reachable_nines[start] = 1
+        return
+
+    neighbours = []
+    x, y = start
+    if (heights[(x + 1, y)] == current_height + 1): neighbours.append((x + 1, y))
+    if (heights[(x - 1, y)] == current_height + 1): neighbours.append((x - 1, y))
+    if (heights[(x, y + 1)] == current_height + 1): neighbours.append((x, y + 1))
+    if (heights[(x, y - 1)] == current_height + 1): neighbours.append((x, y - 1))
+    
+    current_reachable_nines = 0
+    for neighbour in neighbours:
+        if (neighbour not in reachable_nines): calculate_reachable_nines_part02(neighbour, heights, reachable_nines)
+        current_reachable_nines += reachable_nines[neighbour]
+    
+    reachable_nines[start] = current_reachable_nines
+
 
 #TESTS
 
@@ -59,3 +99,10 @@ def test_part01_sample():
 def test_part01_input():
     with open("src/inputs/day10.txt", "r") as f:
         assert 719 == part01(f.read())
+
+def test_part02_sample():
+    assert 81 == part02(sample)
+
+def test_part02_input():
+    with open("src/inputs/day10.txt", "r") as f:
+        assert 1530 == part02(f.read())
