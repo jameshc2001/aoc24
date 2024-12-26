@@ -17,7 +17,7 @@ def part02(input):
 
     for file_id, file_size in files:
         for block_index, (block_id, block_size) in enumerate(disk):
-            if (block_id != '.' and block_id == file_id): break
+            if (block_id == file_id): break
             if (block_id == '.' and block_size >= file_size):
 
                 file_index = disk.index((file_id, file_size))
