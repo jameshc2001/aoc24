@@ -13,11 +13,7 @@ class Robot:
 
 
 def part01(input, max_x, max_y):
-    robots = []
-    for line in input.split("\n"):
-        nums = [int(n) for n in re.findall(r"-?\d+", line)]
-        robots.append(Robot((nums[0], nums[1]), (nums[2], nums[3])))
-
+    robots = get_robots(input)
     for _ in range(100):
         robots = [robot.move(max_x, max_y) for robot in robots]
     
@@ -34,6 +30,31 @@ def part01(input, max_x, max_y):
 
     return top_left * top_right * bottom_left * bottom_right
 
+def part02(input, max_x, max_y):
+    robots = get_robots(input)
+    min_groups = max_x * max_y
+    tree_second = -1
+    for second in range(1, 10000):
+        robots = [robot.move(max_x, max_y) for robot in robots]
+        xs = set()
+        ys = set()
+        for robot in robots:
+            xs.add(robot.pos[0])
+            ys.add(robot.pos[1])
+        groups = len(xs) + len(ys)
+        if (groups < min_groups):
+            # print_robots(robots, max_x, max_y)
+            min_groups = groups
+            tree_second = second
+
+    return tree_second
+
+def get_robots(input):
+    robots = []
+    for line in input.split("\n"):
+        nums = [int(n) for n in re.findall(r"-?\d+", line)]
+        robots.append(Robot((nums[0], nums[1]), (nums[2], nums[3])))
+    return robots
 
 def print_robots(robots, max_x, max_y):
     pos_to_num_of_robots = defaultdict(lambda:0)
@@ -71,3 +92,7 @@ def test_part01_sample():
 def test_part01_input():
     with open("src/inputs/day14.txt", "r") as f:
         assert 214109808 == part01(f.read(), 101, 103)
+
+def test_part02_input():
+    with open("src/inputs/day14.txt", "r") as f:
+        assert 7687 == part02(f.read(), 101, 103)
