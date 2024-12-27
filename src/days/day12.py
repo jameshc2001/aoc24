@@ -9,7 +9,32 @@ def part02(input):
     return sum([len(region) * get_region_sides(region) for region in regions])
 
 def get_region_sides(region):
-    return -1
+    edges = set()
+    for pos in region:
+        for x, y, d in get_adjecent_with_dir(pos[0], pos[1]):
+            if ((x, y) not in region): edges.add((x, y, d))
+    
+    sides = 0
+    while (len(edges) > 0):
+        to_explore = [edges.pop()]
+        side = []
+
+        while (len(to_explore) > 0): #build side, removing from edges as we go
+            edge = to_explore.pop()
+            side.append(edge)
+            if (edge in edges): edges.remove(edge)
+
+            (x, y, d) = edge
+            adjecents = []
+            if (d in ['l', 'r']): adjecents = [(x, y + 1, d), (x, y - 1, d)]
+            elif (d in ['d', 'u']): adjecents = [(x + 1, y, d), (x - 1, y, d)]
+
+            for adjecent in adjecents:
+                if (adjecent in edges): to_explore.append(adjecent)
+
+        sides += 1
+
+    return sides
 
 #get region edges (x, y, direction) e.g.:
 #..AA...
@@ -58,6 +83,7 @@ def get_region_for_pos(pos_to_plant, visited, pos, plant):
     return region
 
 def get_adjecent(x, y): return [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+def get_adjecent_with_dir(x, y): return [(x + 1, y, 'r'), (x - 1, y, 'l'), (x, y + 1, 'd'), (x, y - 1, 'u')]
 
 #TESTS
 
@@ -106,7 +132,7 @@ OXOXO
 OOOOO
 OXOXO
 OOOOO"""
-    assert 436 == part01(sample)
+    assert 436 == part02(sample)
 
 def test_part02_simple03():
     sample = """EEEEE
@@ -137,3 +163,7 @@ MIIIIIJJEE
 MIIISIJEEE
 MMMISSJEEE"""
     assert 1206 == part02(sample)
+
+def test_part02_input():
+    with open("src/inputs/day12.txt", "r") as f:
+        assert 881182 == part02(f.read())
