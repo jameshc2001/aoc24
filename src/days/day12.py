@@ -1,24 +1,31 @@
 from collections import defaultdict
 
 def part01(input):
-    pos_to_plant, regions = get_initial_parameters(input)
-    return sum([len(region) * get_region_perimeter(pos_to_plant, region) for region in regions])
+    regions = get_initial_parameters(input)
+    return sum([len(region) * get_region_perimeter(region) for region in regions])
 
 def part02(input):
-    pos_to_plant, regions = get_initial_parameters(input)
-    return sum([len(region) * get_region_sides(pos_to_plant, region) for region in regions])
+    regions = get_initial_parameters(input)
+    return sum([len(region) * get_region_sides(region) for region in regions])
 
-def get_region_sides(pos_to_plant, region):
-    return 1
+def get_region_sides(region):
+    return -1
 
-def get_region_perimeter(pos_to_plant, region):
-    region_plant = pos_to_plant[region[0]]
-    edges = []
+#get region edges (x, y, direction) e.g.:
+#..AA...
+#..AAX..
+#X is region edge (4, 1, right)
+#once you have a list of region edges you can iterate with
+#while(len(region_edges) > 0)
+#pop one off, look for neighbours with the same direction but one along,
+#add them to a stack and repeat exploring (like in region discovery)
+
+def get_region_perimeter(region):
+    edges = 0
     for pos in region:
         for adjecent in get_adjecent(pos[0], pos[1]):
-            if (pos_to_plant[adjecent] != region_plant):
-                edges.append(pos)
-    return len(edges)
+            if (adjecent not in region): edges += 1
+    return edges
 
 def get_pos_to_plant(input):
     lines = input.split("\n")
@@ -27,6 +34,15 @@ def get_pos_to_plant(input):
         for x, region in enumerate(line):
             pos_to_plant[(x, y)] = region
     return pos_to_plant
+
+def get_initial_parameters(input):
+    pos_to_plant = get_pos_to_plant(input)
+    visited = set()
+    regions = []
+    for pos, plant in list(pos_to_plant.items()):
+        if (pos in visited): continue
+        regions.append(get_region_for_pos(pos_to_plant, visited, pos, plant))
+    return regions
 
 def get_region_for_pos(pos_to_plant, visited, pos, plant):
     region = set()
@@ -39,18 +55,9 @@ def get_region_for_pos(pos_to_plant, visited, pos, plant):
         for adjecent in get_adjecent(current_pos[0], current_pos[1]):
             if (pos_to_plant[adjecent] == plant and adjecent not in visited):
                 to_explore.append(adjecent)
-    return list(region)
+    return region
 
 def get_adjecent(x, y): return [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
-
-def get_initial_parameters(input):
-    pos_to_plant = get_pos_to_plant(input)
-    visited = set()
-    regions = []
-    for pos, plant in list(pos_to_plant.items()):
-        if (pos in visited): continue
-        regions.append(get_region_for_pos(pos_to_plant, visited, pos, plant))
-    return pos_to_plant,regions
 
 #TESTS
 
