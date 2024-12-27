@@ -1,14 +1,15 @@
 from collections import defaultdict
 
 def part01(input):
-    pos_to_plant = get_pos_to_plant(input)
-    visited = set()
-    regions = []
-    for pos, plant in list(pos_to_plant.items()):
-        if (pos in visited): continue
-        regions.append(get_region_for_pos(pos_to_plant, visited, pos, plant))
-
+    pos_to_plant, regions = get_initial_parameters(input)
     return sum([len(region) * get_region_perimeter(pos_to_plant, region) for region in regions])
+
+def part02(input):
+    pos_to_plant, regions = get_initial_parameters(input)
+    return sum([len(region) * get_region_sides(pos_to_plant, region) for region in regions])
+
+def get_region_sides(pos_to_plant, region):
+    return 1
 
 def get_region_perimeter(pos_to_plant, region):
     region_plant = pos_to_plant[region[0]]
@@ -41,6 +42,15 @@ def get_region_for_pos(pos_to_plant, visited, pos, plant):
     return list(region)
 
 def get_adjecent(x, y): return [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
+
+def get_initial_parameters(input):
+    pos_to_plant = get_pos_to_plant(input)
+    visited = set()
+    regions = []
+    for pos, plant in list(pos_to_plant.items()):
+        if (pos in visited): continue
+        regions.append(get_region_for_pos(pos_to_plant, visited, pos, plant))
+    return pos_to_plant,regions
 
 #TESTS
 
@@ -75,3 +85,48 @@ MMMISSJEEE"""
 def test_part01_input():
     with open("src/inputs/day12.txt", "r") as f:
         assert 1467094 == part01(f.read())
+
+def test_part02_simple01():
+    sample = """AAAA
+BBCD
+BBCC
+EEEC"""
+    assert 80 == part02(sample)
+
+def test_part02_simple02():
+    sample = """OOOOO
+OXOXO
+OOOOO
+OXOXO
+OOOOO"""
+    assert 436 == part01(sample)
+
+def test_part02_simple03():
+    sample = """EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE"""
+    assert 236 == part02(sample)
+
+def test_part02_special_case():
+    sample = """AAAAAA
+AAABBA
+AAABBA
+ABBAAA
+ABBAAA
+AAAAAA"""
+    assert 368 == part02(sample)
+
+def test_part02_larger():
+    sample = """RRRRIICCFF
+RRRRIICCCF
+VVRRRCCFFF
+VVRCCCJFFF
+VVVVCJJCFE
+VVIVCCJJEE
+VVIIICJJEE
+MIIIIIJJEE
+MIIISIJEEE
+MMMISSJEEE"""
+    assert 1206 == part02(sample)
