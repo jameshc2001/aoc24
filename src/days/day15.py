@@ -1,5 +1,4 @@
 
-
 def part01(input):
     map_input, instructions_input = input.split("\n\n")
     instructions = instructions_input.replace("\n", "")
@@ -30,6 +29,9 @@ def part01(input):
 
     return sum([100 * y + x for x, y in boxes])
 
+def part02(input):
+    return -1
+
 def get_direction(instruction):
     if (instruction == '<'): return (-1, 0)
     if (instruction == '^'): return (0, -1)
@@ -39,8 +41,7 @@ def get_direction(instruction):
 
 #TESTS
 
-def test_part01_simple_sample():
-    sample = """########
+simple_sample = """########
 #..O.O.#
 ##@.O..#
 #...O..#
@@ -50,10 +51,8 @@ def test_part01_simple_sample():
 ########
 
 <^^>>>vv<v>>v<<"""
-    assert 2028 == part01(sample)
 
-def test_part01_advanced_sample():
-    sample = """##########
+advanced_sample = """##########
 #..O..O.O#
 #......O.#
 #.OO..O.O#
@@ -74,8 +73,23 @@ vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
 <><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
 ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
 v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^"""
-    assert 10092 == part01(sample)
+
+def test_part01_simple_sample():
+    assert 2028 == part01(simple_sample)
+
+def test_part01_advanced_sample():
+    assert 10092 == part01(advanced_sample)
 
 def test_part01_input():
     with open("src/inputs/day15.txt", "r") as f:
         assert 1412971 == part01(f.read())
+
+def test_part02_simple_sample():
+    assert 2028 == part02(simple_sample)
+
+def test_part02_advanced_sample():
+    assert 10092 == part02(advanced_sample)
+
+def test_part02_input():
+    with open("src/inputs/day15.txt", "r") as f:
+        assert 1412971 == part02(f.read())
