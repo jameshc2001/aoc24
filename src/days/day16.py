@@ -1,54 +1,86 @@
 import sys
+import heapq
+
+class Vertex():
+    def __init__(self, position, direction):
+        self.position = position
+        self.direction = direction
+    
+    def __hash__(self):
+        return hash((self.position, self.direction))
+
+    def __eq__(self, value):
+        return self.position == value.position and self.direction == value.direction
+
+#end can be reached from multiple directions
 
 def part01(input):
-    positions = set()
-    start = (-1, -1)
-    end = (-1, -1)
+    vertices = set()
+    start_position = None
+    end_position = None
     for y, line in enumerate(input.split("\n")):
         for x, character in enumerate(line):
-            if (character != '#'): positions.add((x, y)) #always add position
-            if (character == 'S'): start = (x, y)
-            elif (character == 'E'): end = (x, y)
+            pos = (x, y)
+            if (character != '#'):
+                vertices.add(Vertex(pos, (1, 0)))
+                vertices.add(Vertex(pos, (0, 1)))
+                vertices.add(Vertex(pos, (-1, 0)))
+                vertices.add(Vertex(pos, (0, -1)))
+            if (character == 'S'): start_position = pos
+            elif (character == 'E'): end_position = pos
 
-    distances = dijkstra(positions, start)
-    return distances[end]
+    dist, _ = big_dijkstra(vertices, Vertex(start_position, (1, 0)))
+    return min([dist[v] for v in vertices if v.position == end_position])
 
-def dijkstra(positions, start):
+def big_dijkstra(vertices, start):
     dist = {}
-    direction = {}
     prev = {}
     Q = set()
-    for pos in positions:
-        dist[pos] = sys.maxsize
-        Q.add(pos)
+    for v in vertices:
+        dist[v] = sys.maxsize
+        Q.add(v)
     dist[start] = 0
-    direction[start] = (1, 0)
+    prev[start] = []
+
+    original_size = len(Q)
 
     while (len(Q) > 0):
+        print((len(Q) / original_size) * 100)
         u = min(Q, key=lambda pos: dist[pos])
         Q.remove(u)
 
-        neighbours = [pos for pos in get_adjacents(u) if pos in Q]
-        for v in neighbours:
-            alt = dist[u] + 1
-            dir = get_direction(u, v)
-            if (dir != direction[u]): alt += 1000
+        for v, cost in get_neighbours_with_cost(u, Q):
+            alt = dist[u] + cost
             if (alt < dist[v]):
                 dist[v] = alt
                 prev[v] = u
-                direction[v] = dir
     
-    return dist #, prev, direction
-        
-def get_adjacents(pos): return [
-    (pos[0] + 1, pos[1]),
-    (pos[0], pos[1] + 1),
-    (pos[0] - 1, pos[1]),
-    (pos[0], pos[1] - 1),
-]
+    return dist, prev
 
-def get_direction(a, b): return (b[0] - a[0], b[1] - a[1])
+def get_neighbours_with_cost(u, Q):
+    next = Vertex(add_direction(u.position, u.direction), u.direction)
+    clockwise = Vertex(u.position, rotate_clockwise(u.direction))
+    counter_clockwise = Vertex(u.position, rotate_counter_clockwise(u.direction))
 
+    neighbours_with_cost = []
+    if (next in Q): neighbours_with_cost.append((next, 1))
+    if (clockwise in Q): neighbours_with_cost.append((clockwise, 1000))
+    if (counter_clockwise in Q): neighbours_with_cost.append((counter_clockwise, 1000))
+
+    return neighbours_with_cost
+
+def add_direction(pos, direction):
+    return (pos[0] + direction[0], pos[1] + direction[1])
+
+def rotate_counter_clockwise(direction):
+    new_direction = rotate_clockwise(direction)
+    return (-new_direction[0], -new_direction[1])
+
+def rotate_clockwise(direction):
+    if (direction == (1, 0)): return (0, 1)
+    if (direction == (0, 1)): return (-1, 0)
+    if (direction == (-1, 0)): return (0, -1)
+    if (direction == (0, -1)): return (1, 0)
 
 #TESTS
 
@@ -77,3 +109,6 @@ def test_part01_input():
     with open("src/inputs/day16.txt", "r") as f:
         sys.setrecursionlimit(10000)
         assert 98416 == part01(f.read())
+
+def test_part02_sample():
+    assert 64 == part02(sample)
