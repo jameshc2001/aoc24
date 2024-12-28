@@ -1,30 +1,53 @@
 import sys
 
 def part01(input):
-    walls = set()
+    positions = set()
     start = (-1, -1)
     end = (-1, -1)
-    direction = (1, 0)
     for y, line in enumerate(input.split("\n")):
         for x, character in enumerate(line):
-            if (character == '#'): walls.add((x, y))
-            elif (character == 'S'): start = (x, y)
+            if (character != '#'): positions.add((x, y)) #always add position
+            if (character == 'S'): start = (x, y)
             elif (character == 'E'): end = (x, y)
 
-    return search(start, direction, walls, end, set(), 0)
+    distances = dijkstra(positions, start)
+    return distances[end]
 
-def search(pos, direction, walls, end, path, cost):
-    if (pos == end): return cost
-    if (pos in walls or pos in path): return sys.maxsize
+def dijkstra(positions, start):
+    dist = {}
+    direction = {}
+    prev = {}
+    Q = set()
+    for pos in positions:
+        dist[pos] = sys.maxsize
+        Q.add(pos)
+    dist[start] = 0
+    direction[start] = (1, 0)
 
-    path.add(pos)
-    clockwise = rotate_clockwise(direction)
-    counter_clockwise = rotate_counter_clockwise(direction)
-    return min(
-        search(add_direction(pos, direction), direction, walls, end, path.copy(), cost + 1),
-        search(add_direction(pos, clockwise), clockwise, walls, end, path.copy(), cost + 1001),
-        search(add_direction(pos, counter_clockwise), counter_clockwise, walls, end, path.copy(), cost + 1001)
-    )
+    while (len(Q) > 0):
+        u = min(Q, key=lambda pos: dist[pos])
+        Q.remove(u)
+
+        neighbours = [pos for pos in get_adjacents(u) if pos in Q]
+        for v in neighbours:
+            alt = dist[u] + 1
+            dir = get_direction(u, v)
+            if (dir != direction[u]): alt += 1000
+            if (alt < dist[v]):
+                dist[v] = alt
+                prev[v] = u
+                direction[v] = dir
+    
+    return dist #, prev, direction
+        
+def get_adjacents(pos): return [
+    (pos[0] + 1, pos[1]),
+    (pos[0], pos[1] + 1),
+    (pos[0] - 1, pos[1]),
+    (pos[0], pos[1] - 1),
+]
+
+def get_direction(a, b): return (b[0] - a[0], b[1] - a[1])
 
 def add_direction(pos, direction):
     return (pos[0] + direction[0], pos[1] + direction[1])
@@ -66,4 +89,4 @@ def test_part01_sample():
 def test_part01_input():
     with open("src/inputs/day16.txt", "r") as f:
         sys.setrecursionlimit(10000)
-        assert 1412971 == part01(f.read())
+        assert 98416 == part01(f.read())
