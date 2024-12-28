@@ -49,19 +49,6 @@ def get_adjacents(pos): return [
 
 def get_direction(a, b): return (b[0] - a[0], b[1] - a[1])
 
-def add_direction(pos, direction):
-    return (pos[0] + direction[0], pos[1] + direction[1])
-
-def rotate_counter_clockwise(direction):
-    new_direction = rotate_clockwise(direction)
-    return (-new_direction[0], -new_direction[1])
-
-def rotate_clockwise(direction):
-    if (direction == (1, 0)): return (0, 1)
-    if (direction == (0, 1)): return (-1, 0)
-    if (direction == (-1, 0)): return (0, -1)
-    if (direction == (0, -1)): return (1, 0)
-
 
 #TESTS
 
