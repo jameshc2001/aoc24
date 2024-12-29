@@ -8,9 +8,7 @@ def part01(input):
 
 def part02(input):
     _, program = get_registers_and_program(input)
-    input = []
-    for _ in range(len(program)):
-        input.append(0)
+    input = [0] * len(program)
     search(input, program, 0)
     return oct_to_decimal(input)
 
