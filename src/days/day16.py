@@ -16,9 +16,33 @@ class Vertex():
     def __repr__(self):
         return "pos" + str(self.position) + ", dir" + str(self.direction)
 
-#end can be reached from multiple directions
-
 def part01(input):
+    start_position, end_position, vertices, neighbours_and_cost = get_graph_parameters(input)
+    dist, _ = big_dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
+    return min([dist[v] for v in vertices if v.position == end_position])
+
+def part02(input):
+    start_position, end_position, vertices, neighbours_and_cost = get_graph_parameters(input)
+    dist, prev = big_dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
+
+    min_dist = min([dist[v] for v in vertices if v.position == end_position])
+    to_explore = [v for v in vertices if v.position == end_position and dist[v] == min_dist]
+    best_tiles = set()
+    while (len(to_explore) > 0):
+        u = to_explore.pop()
+        best_tiles.add(u.position)
+        next_vertices = prev[u]
+        for v in next_vertices:
+            if (v.position != u.position): #add tiles from v to u
+                forwards = v.position
+                while (forwards != u.position):
+                    forwards = add_direction(forwards, v.direction)
+                    best_tiles.add(forwards)
+            to_explore.append(v)
+
+    return len(best_tiles)
+
+def get_graph_parameters(input):
     positions = set()
     start_position = None
     end_position = None
@@ -30,18 +54,13 @@ def part01(input):
             elif (character == 'E'): end_position = pos
     
     vertices = set()
-    ignored = 0
     for pos in positions:
         has_left = add_direction(pos, (-1, 0)) in positions
         has_right = add_direction(pos, (1, 0)) in positions
         has_up = add_direction(pos, (0, -1)) in positions
         has_down = add_direction(pos, (0, 1)) in positions
-        if (has_left and has_right and not has_up and not has_down):
-            ignored += 1
-            continue #ignore left-right tiles
-        if (has_up and has_down and not has_left and not has_right):
-            ignored += 1
-            continue #ignore up-down tiles
+        if (has_left and has_right and not has_up and not has_down): continue #ignore left-right tiles
+        if (has_up and has_down and not has_left and not has_right): continue #ignore up-down tiles
         vertices.add(Vertex(pos, (1, 0)))
         vertices.add(Vertex(pos, (0, 1)))
         vertices.add(Vertex(pos, (-1, 0)))
@@ -59,16 +78,8 @@ def part01(input):
             forward_position = add_direction(forward_position, v.direction)
             forward_cost += 1
         neighbours_and_cost[v].append((Vertex(forward_position, v.direction), forward_cost))
-
     neighbours_and_cost = dict(neighbours_and_cost)
-    
-    for v, a in neighbours_and_cost.items():
-        assert v in vertices
-        for n, _ in a:
-            assert n in vertices
-    
-    dist, _ = big_dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
-    return min([dist[v] for v in vertices if v.position == end_position])
+    return start_position,end_position,vertices,neighbours_and_cost
 
 def big_dijkstra(vertices, neighbours_and_cost, start):
     dist = {}
@@ -88,7 +99,8 @@ def big_dijkstra(vertices, neighbours_and_cost, start):
             alt = dist[u] + cost
             if (alt < dist[v]):
                 dist[v] = alt
-                prev[v] = u
+                prev[v] = [u]
+            elif (alt == dist[v]): prev[v].append(u)
     
     return dist, prev
 
@@ -142,8 +154,11 @@ def test_part01_sample():
 
 def test_part01_input():
     with open("src/inputs/day16.txt", "r") as f:
-        sys.setrecursionlimit(10000)
         assert 98416 == part01(f.read())
 
 def test_part02_sample():
     assert 64 == part02(sample)
+
+def test_part02_input():
+    with open("src/inputs/day16.txt", "r") as f:
+        assert 471 == part02(f.read())
