@@ -7,26 +7,30 @@ def part01(input):
     return ','.join([str(num) for num in output])
 
 def part02(input):
-    registers, program = get_registers_and_program(input)
-    output = []
-    a_value = 0
-    while (output != program):
-        a_value += 1
-        new_registers = { 'A': a_value, 'B': registers['B'], 'C': registers['C'] }
-        output = run_program(new_registers, program)
-        octal = oct(a_value)
-        if (len(octal) - 2 != len(output)):
-            print("fudge")
-            raise Exception("beans")
-        print(str(a_value) + "   " + oct(a_value) + ": " + str(list(reversed(output))))
-        # print(str(len(format(a_value, 'b'))) + ": " + str(len(to_binary(output))))
-    return a_value
+    _, program = get_registers_and_program(input)
+    expected_output = list(reversed(program))
+    input = []
+    for _ in range(len(program)):
+        input.append(0)
+    search(input, expected_output, program, 0)
+    return oct_to_decimal(input)
 
-def to_binary(output):
-    binary = ""
-    for num in reversed(output):
-        binary += format(num, "03b")
-    return binary
+def search(input, expected_output, program, index):
+    if (index == len(expected_output)): return True
+
+    for octal in range(8):
+        input[index] = octal
+        registers = { 'A': oct_to_decimal(input), 'B': 0, 'C': 0 }
+        output = list(reversed(run_program(registers, program)))
+        if (len(output) == len(expected_output) and output[index] == expected_output[index]):
+            if (search(input, expected_output, program, index + 1)): return True
+    
+    input[index] = 0
+    return False
+
+def oct_to_decimal(input):
+    input_str = ''.join([str(num) for num in input])
+    return int(input_str, 8)
 
 def run_program(registers, program):
     output = []
@@ -117,4 +121,4 @@ Program: 0,3,5,4,3,0
 
 def test_part02_input():
     with open("src/inputs/day17.txt", "r") as f:
-        assert -1 == part02(f.read())
+        assert 190593310997519 == part02(f.read())
