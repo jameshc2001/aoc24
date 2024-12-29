@@ -8,22 +8,21 @@ def part01(input):
 
 def part02(input):
     _, program = get_registers_and_program(input)
-    expected_output = list(reversed(program))
     input = []
     for _ in range(len(program)):
         input.append(0)
-    search(input, expected_output, program, 0)
+    search(input, program, 0)
     return oct_to_decimal(input)
 
-def search(input, expected_output, program, index):
-    if (index == len(expected_output)): return True
+def search(input, program, index):
+    if (index == len(program)): return True
 
     for octal in range(8):
         input[index] = octal
         registers = { 'A': oct_to_decimal(input), 'B': 0, 'C': 0 }
-        output = list(reversed(run_program(registers, program)))
-        if (len(output) == len(expected_output) and output[index] == expected_output[index]):
-            if (search(input, expected_output, program, index + 1)): return True
+        output = run_program(registers, program)
+        if (len(output) == len(program) and output[-index - 1] == program[-index - 1]):
+            if (search(input, program, index + 1)): return True
     
     input[index] = 0
     return False
