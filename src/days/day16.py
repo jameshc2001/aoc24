@@ -1,5 +1,6 @@
 import sys
 import heapq
+from collections import defaultdict
 
 class Vertex():
     def __init__(self, position, direction):
@@ -12,27 +13,64 @@ class Vertex():
     def __eq__(self, value):
         return self.position == value.position and self.direction == value.direction
 
+    def __repr__(self):
+        return "pos" + str(self.position) + ", dir" + str(self.direction)
+
 #end can be reached from multiple directions
 
 def part01(input):
-    vertices = set()
+    positions = set()
     start_position = None
     end_position = None
     for y, line in enumerate(input.split("\n")):
         for x, character in enumerate(line):
             pos = (x, y)
-            if (character != '#'):
-                vertices.add(Vertex(pos, (1, 0)))
-                vertices.add(Vertex(pos, (0, 1)))
-                vertices.add(Vertex(pos, (-1, 0)))
-                vertices.add(Vertex(pos, (0, -1)))
+            if (character != '#'): positions.add(pos)
             if (character == 'S'): start_position = pos
             elif (character == 'E'): end_position = pos
+    
+    vertices = set()
+    ignored = 0
+    for pos in positions:
+        has_left = add_direction(pos, (-1, 0)) in positions
+        has_right = add_direction(pos, (1, 0)) in positions
+        has_up = add_direction(pos, (0, -1)) in positions
+        has_down = add_direction(pos, (0, 1)) in positions
+        if (has_left and has_right and not has_up and not has_down):
+            ignored += 1
+            continue #ignore left-right tiles
+        if (has_up and has_down and not has_left and not has_right):
+            ignored += 1
+            continue #ignore up-down tiles
+        vertices.add(Vertex(pos, (1, 0)))
+        vertices.add(Vertex(pos, (0, 1)))
+        vertices.add(Vertex(pos, (-1, 0)))
+        vertices.add(Vertex(pos, (0, -1)))
 
-    dist, _ = big_dijkstra(vertices, Vertex(start_position, (1, 0)))
+    neighbours_and_cost = defaultdict(list)
+    for v in vertices:
+        neighbours_and_cost[v].append((Vertex(v.position, rotate_clockwise(v.direction)), 1000))
+        neighbours_and_cost[v].append((Vertex(v.position, rotate_counter_clockwise(v.direction)), 1000))
+        if (add_direction(v.position, v.direction) not in positions): continue #facing wall
+
+        forward_cost = 1
+        forward_position = add_direction(v.position, v.direction)
+        while (Vertex(forward_position, v.direction) not in vertices):
+            forward_position = add_direction(forward_position, v.direction)
+            forward_cost += 1
+        neighbours_and_cost[v].append((Vertex(forward_position, v.direction), forward_cost))
+
+    neighbours_and_cost = dict(neighbours_and_cost)
+    
+    for v, a in neighbours_and_cost.items():
+        assert v in vertices
+        for n, _ in a:
+            assert n in vertices
+    
+    dist, _ = big_dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
     return min([dist[v] for v in vertices if v.position == end_position])
 
-def big_dijkstra(vertices, start):
+def big_dijkstra(vertices, neighbours_and_cost, start):
     dist = {}
     prev = {}
     Q = set()
@@ -42,14 +80,11 @@ def big_dijkstra(vertices, start):
     dist[start] = 0
     prev[start] = []
 
-    original_size = len(Q)
-
     while (len(Q) > 0):
-        print((len(Q) / original_size) * 100)
         u = min(Q, key=lambda pos: dist[pos])
         Q.remove(u)
 
-        for v, cost in get_neighbours_with_cost(u, Q):
+        for v, cost in neighbours_and_cost[u]:
             alt = dist[u] + cost
             if (alt < dist[v]):
                 dist[v] = alt
