@@ -1,5 +1,5 @@
 import sys
-import heapq
+import heapq as hq
 from collections import defaultdict
 
 class Vertex():
@@ -15,15 +15,18 @@ class Vertex():
 
     def __repr__(self):
         return "pos" + str(self.position) + ", dir" + str(self.direction)
+    
+    def __lt__(self, _):
+        return True
 
 def part01(input):
     start_position, end_position, vertices, neighbours_and_cost = get_graph_parameters(input)
-    dist, _ = big_dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
+    dist, _ = dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
     return min([dist[v] for v in vertices if v.position == end_position])
 
 def part02(input):
     start_position, end_position, vertices, neighbours_and_cost = get_graph_parameters(input)
-    dist, prev = big_dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
+    dist, prev = dijkstra(vertices, neighbours_and_cost, Vertex(start_position, (1, 0)))
 
     min_dist = min([dist[v] for v in vertices if v.position == end_position])
     to_explore = [v for v in vertices if v.position == end_position and dist[v] == min_dist]
@@ -81,25 +84,29 @@ def get_graph_parameters(input):
     neighbours_and_cost = dict(neighbours_and_cost)
     return start_position,end_position,vertices,neighbours_and_cost
 
-def big_dijkstra(vertices, neighbours_and_cost, start):
+def dijkstra(vertices, neighbours_and_cost, start):
     dist = {}
     prev = {}
-    Q = set()
+    Q = []
+    removed = set()
     for v in vertices:
         dist[v] = sys.maxsize
-        Q.add(v)
+        hq.heappush(Q, (dist[v], v))
     dist[start] = 0
     prev[start] = []
 
     while (len(Q) > 0):
-        u = min(Q, key=lambda pos: dist[pos])
-        Q.remove(u)
+        popped = hq.heappop(Q)
+        if (popped in removed): continue
+        u = popped[1]
 
         for v, cost in neighbours_and_cost[u]:
             alt = dist[u] + cost
             if (alt < dist[v]):
+                removed.add((dist[v], v))
                 dist[v] = alt
                 prev[v] = [u]
+                hq.heappush(Q, (dist[v], v))
             elif (alt == dist[v]): prev[v].append(u)
     
     return dist, prev
