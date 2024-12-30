@@ -1,9 +1,7 @@
 from functools import cache
 
 def part01(input):
-    towels, patterns = input.split("\n\n")
-    towels = tuple(towels.split(", "))
-    patterns = patterns.split("\n")
+    towels, patterns = get_towels_and_patterns(input)
     return len([pattern for pattern in patterns if ways_to_make_pattern(towels, pattern) > 0])
 
 def part02(input):
@@ -17,9 +15,7 @@ def ways_to_make_pattern(towels, pattern):
 
 def get_towels_and_patterns(input):
     towels, patterns = input.split("\n\n")
-    towels = tuple(towels.split(", "))
-    patterns = patterns.split("\n")
-    return towels,patterns
+    return tuple(towels.split(", ")), patterns.split("\n")
 
 #TESTS
 
