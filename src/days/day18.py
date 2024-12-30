@@ -37,12 +37,12 @@ def dijkstra(positions, corrupted, start):
     prev = {}
     Q = []
     removed = set()
-    for pos in positions:
-        if (pos in corrupted): continue
-        dist[pos] = sys.maxsize
-        hq.heappush(Q, (dist[pos], pos))
     dist[start] = 0
     prev[start] = None
+    for pos in positions:
+        if (pos in corrupted): continue
+        if (pos != start): dist[pos] = sys.maxsize
+        hq.heappush(Q, (dist[pos], pos))
     
     while (len(Q) > 0):
         popped = hq.heappop(Q)

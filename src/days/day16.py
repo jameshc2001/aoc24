@@ -89,11 +89,11 @@ def dijkstra(vertices, neighbours_and_cost, start):
     prev = {}
     Q = []
     removed = set()
-    for v in vertices:
-        dist[v] = sys.maxsize
-        hq.heappush(Q, (dist[v], v))
     dist[start] = 0
     prev[start] = []
+    for v in vertices:
+        if (v != start): dist[v] = sys.maxsize
+        hq.heappush(Q, (dist[v], v))
 
     while (len(Q) > 0):
         popped = hq.heappop(Q)
