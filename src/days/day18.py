@@ -1,5 +1,6 @@
 import re
 import sys
+import heapq as hq
 
 def part01(input, num_of_bytes, end):
     lines = input.split("\n")
@@ -29,23 +30,27 @@ def print_grid(positions, end):
 def dijkstra(positions, start):
     dist = {}
     prev = {}
-    Q = set()
+    Q = []
+    removed = set()
     for pos in positions:
         dist[pos] = sys.maxsize
-        Q.add(pos)
+        hq.heappush(Q, (dist[pos], pos))
     dist[start] = 0
     prev[start] = None
     
     while (len(Q) > 0):
-        u = min(Q, key=lambda pos: dist[pos])
-        Q.remove(u)
+        popped = hq.heappop(Q)
+        if (popped in removed): continue
+        u = popped[1]
 
         for v in get_adjacent(u):
-            if (v not in Q): continue
+            if (v not in positions): continue
             alt = dist[u] + 1
             if (alt < dist[v]):
+                removed.add((dist[v], v))
                 dist[v] = alt
                 prev[v] = u
+                hq.heappush(Q, (dist[v], v))
     
     return dist, prev
 
