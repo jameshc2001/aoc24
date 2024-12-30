@@ -16,10 +16,11 @@ def search(input, program, index):
     if (index == len(program)): return True
 
     for octal in range(8):
+        if (index == 0 and octal == 0): continue
         input[index] = octal
         registers = { 'A': oct_to_decimal(input), 'B': 0, 'C': 0 }
         output = run_program(registers, program)
-        if (len(output) == len(program) and output[-index - 1] == program[-index - 1]):
+        if (output[-index - 1] == program[-index - 1]):
             if (search(input, program, index + 1)): return True
     
     input[index] = 0
