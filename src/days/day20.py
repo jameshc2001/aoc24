@@ -8,7 +8,7 @@ def solution(input, picos_to_save, max_cheat_time):
     cheats = 0
     current_pos = start
     while (current_pos in prev):
-        for cheat_destination, cheat_time in get_cheat_destinations(current_pos, positions, max_cheat_time).items():
+        for cheat_destination, cheat_time in get_cheat_destinations(current_pos, positions, max_cheat_time):
             time_saved = dist[current_pos] - dist[cheat_destination] - cheat_time
             if (time_saved >= picos_to_save): cheats += 1
         current_pos = prev[current_pos]
@@ -16,13 +16,13 @@ def solution(input, picos_to_save, max_cheat_time):
     return cheats
 
 def get_cheat_destinations(pos, positions, distance):
-    destinations = {}
+    destinations = set()
     for x in range(-distance - 1, distance + 1):
         for y in range(-distance - 1, distance + 1):
             dest = (pos[0] + x, pos[1] + y)
             time = manhattan_distance(pos, dest)
             if (dest in positions and time <= distance):
-                destinations[dest] = time
+                destinations.add((dest, time))
     return destinations
 
 def manhattan_distance(a, b): return abs(a[0] - b[0]) + abs(a[1] - b[1])
