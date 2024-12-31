@@ -1,4 +1,5 @@
 import re
+import sys
 from functools import cache
 from itertools import pairwise
 
@@ -8,23 +9,27 @@ def solution(input, iterations):
 def complexity(code, iterations):
     sequence = get_best_sequence(code, numpad)
 
-    pieces = ''
+    length = 0
     for a, b in pairwise(['A'] + sequence):
-        pieces += get_human_instructions(a, b, iterations)
+        length += get_human_instructions(a, b, iterations)
 
     [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
-    return numeric_part * len(pieces)
+    return numeric_part * length
 
 @cache
 def get_human_instructions(current_key, next_key, depth):
-    if (depth == 0): return next_key
+    if (depth == 0): return 1
 
-    best_move = get_best_move(directional.values(), directional[current_key], directional[next_key])
-    complete = ""
-    for a, b in pairwise(['A'] + best_move):
-        complete += get_human_instructions(a, b, depth - 1)
+    valid_moves = get_valid_moves(directional.values(), directional[current_key], directional[next_key])
 
-    return complete
+    minimum = sys.maxsize
+    for move in valid_moves:
+        total = 0
+        for a, b in pairwise(['A'] + move):
+            total += get_human_instructions(a, b, depth - 1)
+        if (total < minimum): minimum = total
+
+    return minimum
 
 def get_best_sequence(code, keypad):
     sequence = []
@@ -36,10 +41,21 @@ def get_best_sequence(code, keypad):
 
     return sequence
 
-#maybe cache this?
 def get_best_move(positions, start, end):
     if (start == end): return ['A']
 
+    valid_moves = get_valid_moves(positions, start, end)
+
+    for m in valid_moves:
+        if (m[-2] == '^'): return m
+    for m in valid_moves:
+        if (m[-2] == '>'): return m
+    for m in valid_moves:
+        if (m[-2] == 'v'): return m
+
+    return valid_moves[0]
+
+def get_valid_moves(positions, start, end):
     x = end[0] - start[0]
     y = end[1] - start[1]
     move = []
@@ -51,14 +67,12 @@ def get_best_move(positions, start, end):
         else: move.append('v')
 
     moves = [move, list(reversed(move))]
-    valid_moves = [m for m in moves if is_valid_move(m, positions, start, end)]
+    valid_moves = [m + ['A'] for m in moves if is_valid_move(m, positions, start, end)]
 
-    for m in valid_moves:
-        if (m[-1] == '^' or m[-1] == '>'): return m + ['A']
-    for m in valid_moves:
-        if (m[-1] == 'v'): return m + ['A']
+    if (len(valid_moves) == 0):
+        print('fudge')
 
-    return valid_moves[0] + ['A']
+    return valid_moves
 
 def is_valid_move(move, positions, start, end):
     x, y = start
@@ -102,4 +116,4 @@ def test_part01_input():
 
 def test_part02_input():
     with open("src/inputs/day21.txt", "r") as f:
-        assert 176650 == solution(f.read(), 25)
+        assert 218160099093716 == solution(f.read(), 25)
