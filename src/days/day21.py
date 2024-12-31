@@ -1,40 +1,44 @@
 import re
 from itertools import permutations
-
+from functools import cache
 
 def part01(input):
     return sum([complexity(code) for code in input.split("\n")])
 
 def complexity(code):
-    numeric_sequences = shortest_sequences_numeric(code)
+    initial_sequences_from_numpad = filter_optimal_sequences(all_sequences(code, numpad))
 
-    directional_sequences_one = set()
-    for n in numeric_sequences:
-        for s in shortest_sequences_directional(n):
-            directional_sequences_one.add(s)
+    directional_sequences = set()
+    for i in initial_sequences_from_numpad:
+        directional_sequences.update(all_sequences(i, directional))
+    directional_sequences = filter_optimal_sequences(directional_sequences)
     
-    directional_sequences_two = set()
-    for d in directional_sequences_one:
-        for s in shortest_sequences_directional(d):
-            directional_sequences_two.add(s)
-
-    final = min_len_values(directional_sequences_two)
-
+    min_sequence_len = length_of_directional_sequence(directional_sequences.pop())
     [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
-    min_sequence_len = len(final.pop())
     return numeric_part * min_sequence_len
 
 def shortest_sequences_numeric(code):
-    return shortest_sequences(code, numpad)
+    return filter_optimal_sequences(all_sequences(code, numpad))
 
 def shortest_sequences_directional(code):
-    return shortest_sequences(code, directional)
+    return filter_optimal_sequences(all_sequences(code, directional))
 
-def min_len_values(values):
-    min_len = len(min(values, key=lambda v: len(v)))
-    return [v for v in values if len(v) == min_len]
+def filter_optimal_sequences(sequences):
+    min_length = length_of_directional_sequence(min(sequences, key=lambda s: length_of_directional_sequence(s)))
+    return [s for s in sequences if length_of_directional_sequence(s) == min_length]
 
-def shortest_sequences(code, keypad):
+@cache
+def length_of_directional_sequence(sequence):
+    length = 0
+    current_key = 'A'
+    for next_key in sequence:
+        current_x, current_y = directional[current_key]
+        next_x, next_y = directional[next_key]
+        length += abs(next_x - current_x) + abs(next_y - current_y) + 1 #additional 1 is for 'A'
+        current_key = next_key
+    return length
+
+def all_sequences(code, keypad):
     sequences = set(get_all_valid_permutations(keypad.values(), keypad['A'], keypad[code[0]]))
     current_key = code[0]
 
@@ -51,7 +55,7 @@ def shortest_sequences(code, keypad):
 
     return sequences
 
-
+@cache
 def get_all_valid_permutations(positions, start, end):
     x = end[0] - start[0]
     y = end[1] - start[1]
@@ -108,14 +112,14 @@ def test_get_all_permutations():
     assert tuple('^<^^A') in result
 
 def test_shortest_sequences_numeric():
-    result = shortest_sequences_numeric('029A')
+    result = all_sequences('029A', numpad)
     assert 3 == len(result)
     assert tuple('<A^A>^^AvvvA') in result
     assert tuple('<A^A^>^AvvvA') in result
     assert tuple('<A^A^^>AvvvA') in result
 
 def test_shortest_sequences_directional():
-    result = shortest_sequences_directional('<A^A>^^AvvvA')
+    result = all_sequences('<A^A>^^AvvvA', directional)
     assert tuple('v<<A>>^A<A>AvA<^AA>A<vAAA>^A') in result
 
 def test_complexity():
@@ -126,4 +130,4 @@ def test_part01_sample():
 
 def test_part01_input():
     with open("src/inputs/day21.txt", "r") as f:
-        assert -1 == part01(f.read())
+        assert 176650 == part01(f.read())
