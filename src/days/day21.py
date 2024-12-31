@@ -17,12 +17,6 @@ def complexity(code):
     [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
     return numeric_part * min_sequence_len
 
-def shortest_sequences_numeric(code):
-    return filter_optimal_sequences(all_sequences(code, numpad))
-
-def shortest_sequences_directional(code):
-    return filter_optimal_sequences(all_sequences(code, directional))
-
 def filter_optimal_sequences(sequences):
     min_length = length_of_directional_sequence(min(sequences, key=lambda s: length_of_directional_sequence(s)))
     return [s for s in sequences if length_of_directional_sequence(s) == min_length]
