@@ -1,14 +1,38 @@
-import sys
+import re
 from itertools import permutations
 
+
 def part01(input):
-    return -1
+    return sum([complexity(code) for code in input.split("\n")])
+
+def complexity(code):
+    numeric_sequences = shortest_sequences_numeric(code)
+
+    directional_sequences_one = set()
+    for n in numeric_sequences:
+        for s in shortest_sequences_directional(n):
+            directional_sequences_one.add(s)
+    
+    directional_sequences_two = set()
+    for d in directional_sequences_one:
+        for s in shortest_sequences_directional(d):
+            directional_sequences_two.add(s)
+
+    final = min_len_values(directional_sequences_two)
+
+    [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
+    min_sequence_len = len(final.pop())
+    return numeric_part * min_sequence_len
 
 def shortest_sequences_numeric(code):
     return shortest_sequences(code, numpad)
 
 def shortest_sequences_directional(code):
     return shortest_sequences(code, directional)
+
+def min_len_values(values):
+    min_len = len(min(values, key=lambda v: len(v)))
+    return [v for v in values if len(v) == min_len]
 
 def shortest_sequences(code, keypad):
     sequences = set(get_all_valid_permutations(keypad.values(), keypad['A'], keypad[code[0]]))
@@ -94,5 +118,12 @@ def test_shortest_sequences_directional():
     result = shortest_sequences_directional('<A^A>^^AvvvA')
     assert tuple('v<<A>>^A<A>AvA<^AA>A<vAAA>^A') in result
 
+def test_complexity():
+    assert 68 * 29 == complexity("029A")
+
 def test_part01_sample():
     assert 126384 == part01(sample)
+
+def test_part01_input():
+    with open("src/inputs/day21.txt", "r") as f:
+        assert -1 == part01(f.read())
