@@ -5,12 +5,18 @@ def part01(input):
     return -1
 
 def shortest_sequences_numeric(code):
-    sequences = set(get_all_valid_permutations(numpad.values(), numpad['A'], numpad[code[0]]))
+    return shortest_sequences(code, numpad)
+
+def shortest_sequences_directional(code):
+    return shortest_sequences(code, directional)
+
+def shortest_sequences(code, keypad):
+    sequences = set(get_all_valid_permutations(keypad.values(), keypad['A'], keypad[code[0]]))
     current_key = code[0]
 
     for next_key in code[1:]:
         new_sequences = set()
-        all_valid_permutations = get_all_valid_permutations(numpad.values(), numpad[current_key], numpad[next_key])
+        all_valid_permutations = get_all_valid_permutations(keypad.values(), keypad[current_key], keypad[next_key])
 
         for s in sequences:
             for p in all_valid_permutations:
@@ -53,12 +59,18 @@ numpad = {
                  '0': (1, 3), 'A': (2, 3)
 }
 
+directional = {
+                 '^': (1, 0), 'A': (2, 0),
+    '<': (0, 1), 'v': (1, 1), '>': (2, 1)
+}
+
 #TESTS
 
-sample = """"""
-
-# def test_part01_sample():
-#     assert 1 == part01(sample)
+sample = """029A
+980A
+179A
+456A
+379A"""
 
 def test_get_all_permutations():
     result = get_all_valid_permutations(
@@ -77,3 +89,10 @@ def test_shortest_sequences_numeric():
     assert tuple('<A^A>^^AvvvA') in result
     assert tuple('<A^A^>^AvvvA') in result
     assert tuple('<A^A^^>AvvvA') in result
+
+def test_shortest_sequences_directional():
+    result = shortest_sequences_directional('<A^A>^^AvvvA')
+    assert tuple('v<<A>>^A<A>AvA<^AA>A<vAAA>^A') in result
+
+def test_part01_sample():
+    assert 126384 == part01(sample)
