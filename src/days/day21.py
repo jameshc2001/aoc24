@@ -20,16 +20,12 @@ def complexity(code, iterations):
 def get_human_instructions(current_key, next_key, depth):
     if (depth == 0): return 1
 
-    valid_moves = get_valid_moves(directional.values(), directional[current_key], directional[next_key])
+    best_move = get_best_move(directional.values(), directional[current_key], directional[next_key])
+    complete = 0
+    for a, b in pairwise(['A'] + best_move):
+        complete += get_human_instructions(a, b, depth - 1)
 
-    minimum = sys.maxsize
-    for move in valid_moves:
-        total = 0
-        for a, b in pairwise(['A'] + move):
-            total += get_human_instructions(a, b, depth - 1)
-        if (total < minimum): minimum = total
-
-    return minimum
+    return complete
 
 def get_best_sequence(code, keypad):
     sequence = []
@@ -44,18 +40,6 @@ def get_best_sequence(code, keypad):
 def get_best_move(positions, start, end):
     if (start == end): return ['A']
 
-    valid_moves = get_valid_moves(positions, start, end)
-
-    for m in valid_moves:
-        if (m[-2] == '^'): return m
-    for m in valid_moves:
-        if (m[-2] == '>'): return m
-    for m in valid_moves:
-        if (m[-2] == 'v'): return m
-
-    return valid_moves[0]
-
-def get_valid_moves(positions, start, end):
     x = end[0] - start[0]
     y = end[1] - start[1]
     move = []
@@ -67,12 +51,16 @@ def get_valid_moves(positions, start, end):
         else: move.append('v')
 
     moves = [move, list(reversed(move))]
-    valid_moves = [m + ['A'] for m in moves if is_valid_move(m, positions, start, end)]
+    valid_moves = [m for m in moves if is_valid_move(m, positions, start, end)]
 
-    if (len(valid_moves) == 0):
-        print('fudge')
+    for m in valid_moves:
+        if (m[0] == '<'): return m + ['A']
+    for m in valid_moves:
+        if (m[0] == 'v'): return m + ['A']
+    for m in valid_moves:
+        if (m[0] == '^'): return m + ['A']
 
-    return valid_moves
+    return valid_moves[0] + ['A']
 
 def is_valid_move(move, positions, start, end):
     x, y = start
@@ -114,6 +102,9 @@ def test_part01_input():
     with open("src/inputs/day21.txt", "r") as f:
         assert 176650 == solution(f.read(), 2)
 
+def test_part02_sample():
+    assert 154115708116294 == solution(sample, 25)
+
 def test_part02_input():
     with open("src/inputs/day21.txt", "r") as f:
-        assert 218160099093716 == solution(f.read(), 25)
+        assert 217698355426872 == solution(f.read(), 25)
