@@ -6,20 +6,16 @@ def part01(input):
     return sum([complexity(code) for code in input.split("\n")])
 
 def complexity(code):
-    initial_sequences_from_numpad = filter_optimal_sequences(all_sequences(code, numpad))
+    initial_sequences_from_numpad = all_sequences(code, numpad)
 
     directional_sequences = set()
     for i in initial_sequences_from_numpad:
         directional_sequences.update(all_sequences(i, directional))
-    directional_sequences = filter_optimal_sequences(directional_sequences)
+    directional_sequences = directional_sequences
     
-    min_sequence_len = length_of_directional_sequence(directional_sequences.pop())
+    min_sequence_len = length_of_directional_sequence(min(directional_sequences, key=lambda s: length_of_directional_sequence(s)))
     [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
     return numeric_part * min_sequence_len
-
-def filter_optimal_sequences(sequences):
-    min_length = length_of_directional_sequence(min(sequences, key=lambda s: length_of_directional_sequence(s)))
-    return [s for s in sequences if length_of_directional_sequence(s) == min_length]
 
 @cache
 def length_of_directional_sequence(sequence):
@@ -94,7 +90,7 @@ sample = """029A
 456A
 379A"""
 
-def test_get_all_permutations():
+def test_get_all_valid_permutations():
     result = get_all_valid_permutations(
         numpad.values(),
         numpad['0'],
@@ -105,14 +101,14 @@ def test_get_all_permutations():
     assert tuple('^^<^A') in result
     assert tuple('^<^^A') in result
 
-def test_shortest_sequences_numeric():
+def test_find_sequences_numeric():
     result = all_sequences('029A', numpad)
     assert 3 == len(result)
     assert tuple('<A^A>^^AvvvA') in result
     assert tuple('<A^A^>^AvvvA') in result
     assert tuple('<A^A^^>AvvvA') in result
 
-def test_shortest_sequences_directional():
+def test_find_sequences_directional():
     result = all_sequences('<A^A>^^AvvvA', directional)
     assert tuple('v<<A>>^A<A>AvA<^AA>A<vAAA>^A') in result
 
