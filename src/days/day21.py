@@ -1,30 +1,42 @@
 import re
-from itertools import permutations
 from functools import cache
+from itertools import pairwise
 
 def solution(input, iterations):
     return sum([complexity(code, iterations) for code in input.split("\n")])
 
 def complexity(code, iterations):
     sequence = get_best_sequence(code, numpad)
-    for _ in range(iterations):
-        print(len(sequence))
-        sequence = get_best_sequence(sequence, directional)
-    
+
+    pieces = ''
+    for a, b in pairwise(['A'] + sequence):
+        pieces += get_human_instructions(a, b, iterations)
+
     [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
-    return numeric_part * len(sequence)
+    return numeric_part * len(pieces)
+
+@cache
+def get_human_instructions(current_key, next_key, depth):
+    if (depth == 0): return next_key
+
+    best_move = get_best_move(directional.values(), directional[current_key], directional[next_key])
+    complete = ""
+    for a, b in pairwise(['A'] + best_move):
+        complete += get_human_instructions(a, b, depth - 1)
+
+    return complete
 
 def get_best_sequence(code, keypad):
     sequence = []
     current_key = 'A'
 
     for next_key in code:
-        sequence = sequence + get_best_move(keypad.values(), keypad[current_key], keypad[next_key])
+        sequence.extend(get_best_move(keypad.values(), keypad[current_key], keypad[next_key]))
         current_key = next_key
 
     return sequence
 
-@cache
+#maybe cache this?
 def get_best_move(positions, start, end):
     if (start == end): return ['A']
 
