@@ -2,16 +2,17 @@ import re
 from itertools import permutations
 from functools import cache
 
-def part01(input):
-    return sum([complexity(code) for code in input.split("\n")])
+def solution(input, iterations):
+    return sum([complexity(code, iterations) for code in input.split("\n")])
 
-def complexity(code):
-    initial_sequence_from_numpad = get_best_sequence(code, numpad)
-    directional_sequence = get_best_sequence(get_best_sequence(initial_sequence_from_numpad, directional), directional)
+def complexity(code, iterations):
+    sequence = get_best_sequence(code, numpad)
+    for _ in range(iterations):
+        print(len(sequence))
+        sequence = get_best_sequence(sequence, directional)
     
-    min_sequence_len = len(directional_sequence)
     [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
-    return numeric_part * min_sequence_len
+    return numeric_part * len(sequence)
 
 def get_best_sequence(code, keypad):
     sequence = []
@@ -25,6 +26,8 @@ def get_best_sequence(code, keypad):
 
 @cache
 def get_best_move(positions, start, end):
+    if (start == end): return ['A']
+
     x = end[0] - start[0]
     y = end[1] - start[1]
     move = []
@@ -34,12 +37,16 @@ def get_best_move(positions, start, end):
     for _ in range(abs(y)):
         if (y < 0): move.append('^')
         else: move.append('v')
-    
-    best_move = None
-    if (is_valid_move(move, positions, start, end)): best_move = move
-    else: best_move = list(reversed(move))
 
-    return best_move + ['A']
+    moves = [move, list(reversed(move))]
+    valid_moves = [m for m in moves if is_valid_move(m, positions, start, end)]
+
+    for m in valid_moves:
+        if (m[-1] == '^' or m[-1] == '>'): return m + ['A']
+    for m in valid_moves:
+        if (m[-1] == 'v'): return m + ['A']
+
+    return valid_moves[0] + ['A']
 
 def is_valid_move(move, positions, start, end):
     x, y = start
@@ -71,34 +78,16 @@ sample = """029A
 456A
 379A"""
 
-def test_get_all_valid_permutations():
-    result = get_best_move(
-        numpad.values(),
-        numpad['0'],
-        numpad['7']
-    )
-    assert 3 == len(result)
-    assert tuple('^^^<A') in result
-    assert tuple('^^<^A') in result
-    assert tuple('^<^^A') in result
-
-def test_find_sequences_numeric():
-    result = get_best_sequence('029A', numpad)
-    assert 3 == len(result)
-    assert tuple('<A^A>^^AvvvA') in result
-    assert tuple('<A^A^>^AvvvA') in result
-    assert tuple('<A^A^^>AvvvA') in result
-
-def test_find_sequences_directional():
-    result = get_best_sequence('<A^A>^^AvvvA', directional)
-    assert tuple('v<<A>>^A<A>AvA<^AA>A<vAAA>^A') in result
-
 def test_complexity():
-    assert 68 * 29 == complexity("029A")
+    assert 68 * 29 == complexity("029A", 2)
 
 def test_part01_sample():
-    assert 126384 == part01(sample)
+    assert 126384 == solution(sample, 2)
 
 def test_part01_input():
     with open("src/inputs/day21.txt", "r") as f:
-        assert 176650 == part01(f.read())
+        assert 176650 == solution(f.read(), 2)
+
+def test_part02_input():
+    with open("src/inputs/day21.txt", "r") as f:
+        assert 176650 == solution(f.read(), 25)
