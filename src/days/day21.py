@@ -6,67 +6,48 @@ def part01(input):
     return sum([complexity(code) for code in input.split("\n")])
 
 def complexity(code):
-    initial_sequences_from_numpad = all_sequences(code, numpad)
-
-    directional_sequences = set()
-    for i in initial_sequences_from_numpad:
-        directional_sequences.update(all_sequences(i, directional))
-    directional_sequences = directional_sequences
+    initial_sequence_from_numpad = get_best_sequence(code, numpad)
+    directional_sequence = get_best_sequence(get_best_sequence(initial_sequence_from_numpad, directional), directional)
     
-    min_sequence_len = length_of_directional_sequence(min(directional_sequences, key=lambda s: length_of_directional_sequence(s)))
+    min_sequence_len = len(directional_sequence)
     [numeric_part] = [int(n) for n in re.findall(r"\d+", code)]
     return numeric_part * min_sequence_len
 
-@cache
-def length_of_directional_sequence(sequence):
-    length = 0
+def get_best_sequence(code, keypad):
+    sequence = []
     current_key = 'A'
-    for next_key in sequence:
-        current_x, current_y = directional[current_key]
-        next_x, next_y = directional[next_key]
-        length += abs(next_x - current_x) + abs(next_y - current_y) + 1 #additional 1 is for 'A'
-        current_key = next_key
-    return length
 
-def all_sequences(code, keypad):
-    sequences = set(get_all_valid_permutations(keypad.values(), keypad['A'], keypad[code[0]]))
-    current_key = code[0]
-
-    for next_key in code[1:]:
-        new_sequences = set()
-        all_valid_permutations = get_all_valid_permutations(keypad.values(), keypad[current_key], keypad[next_key])
-
-        for s in sequences:
-            for p in all_valid_permutations:
-                new_sequences.add(s + p)
-
-        sequences = new_sequences
+    for next_key in code:
+        sequence = sequence + get_best_move(keypad.values(), keypad[current_key], keypad[next_key])
         current_key = next_key
 
-    return sequences
+    return sequence
 
 @cache
-def get_all_valid_permutations(positions, start, end):
+def get_best_move(positions, start, end):
     x = end[0] - start[0]
     y = end[1] - start[1]
-    moves = []
+    move = []
     for _ in range(abs(x)):
-        if (x < 0): moves.append('<')
-        else: moves.append('>')
+        if (x < 0): move.append('<')
+        else: move.append('>')
     for _ in range(abs(y)):
-        if (y < 0): moves.append('^')
-        else: moves.append('v')
+        if (y < 0): move.append('^')
+        else: move.append('v')
     
-    all_permutations = set(permutations(moves, len(moves)))
-    return [p + tuple('A') for p in all_permutations if is_valid_permutation(p, positions, start, end)]
+    best_move = None
+    if (is_valid_move(move, positions, start, end)): best_move = move
+    else: best_move = list(reversed(move))
 
-def is_valid_permutation(permutation, positions, start, end):
+    return best_move + ['A']
+
+def is_valid_move(move, positions, start, end):
     x, y = start
-    for move in permutation:
-        if (move == '>'): x += 1
-        elif (move == 'v'): y += 1
-        elif (move == '<'): x -= 1
-        elif (move == '^'): y -= 1
+    for key in move:
+        if (key == '>'): x += 1
+        elif (key == 'v'): y += 1
+        elif (key == '<'): x -= 1
+        elif (key == '^'): y -= 1
         if ((x, y) not in positions): return False
     return (x, y) == end
 
@@ -91,7 +72,7 @@ sample = """029A
 379A"""
 
 def test_get_all_valid_permutations():
-    result = get_all_valid_permutations(
+    result = get_best_move(
         numpad.values(),
         numpad['0'],
         numpad['7']
@@ -102,14 +83,14 @@ def test_get_all_valid_permutations():
     assert tuple('^<^^A') in result
 
 def test_find_sequences_numeric():
-    result = all_sequences('029A', numpad)
+    result = get_best_sequence('029A', numpad)
     assert 3 == len(result)
     assert tuple('<A^A>^^AvvvA') in result
     assert tuple('<A^A^>^AvvvA') in result
     assert tuple('<A^A^^>AvvvA') in result
 
 def test_find_sequences_directional():
-    result = all_sequences('<A^A>^^AvvvA', directional)
+    result = get_best_sequence('<A^A>^^AvvvA', directional)
     assert tuple('v<<A>>^A<A>AvA<^AA>A<vAAA>^A') in result
 
 def test_complexity():
