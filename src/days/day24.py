@@ -1,4 +1,4 @@
-from typing import List
+from collections import defaultdict
 
 class Gate:
     def __init__(self, left_input, right_input, operation, output):
@@ -11,21 +11,12 @@ class Gate:
         if (self.operation == "AND"): return left_value & right_value
         if (self.operation == "OR"): return left_value | right_value
         if (self.operation == "XOR"): return left_value ^ right_value
+    
+    def __repr__(self):
+        return self.left_input + " " + self.operation + " " + self.right_input + " -> " + self.output
 
 def part01(input):
-
-    initial_wires, gate_text = input.split("\n\n")
-
-    wires = {}
-    for wire in initial_wires.split("\n"):
-        name, value = wire.split(": ")
-        wires[name] = int(value)
-
-    gates = list()
-    for gate in gate_text.split("\n"):
-        left_input, operation, right_input, output = gate.replace("-> ", "").split(" ")
-        gates.append(Gate(left_input, right_input, operation, output))
-
+    wires, gates = get_wires_and_gates(input)
 
     while (len(gates) > 0):
         remaining_gates = list()
@@ -41,6 +32,46 @@ def part01(input):
     for wire in z_wires: binary += str(wire[1])
 
     return int(binary, 2)
+
+def part02(input):
+    _, gates = get_wires_and_gates(input)
+
+    output_gate_ops = defaultdict(set) #tells us what types of gate a given gate connects to
+    for gate in gates:
+        output_ops = set([other.operation for other in gates if other.left_input == gate.output or other.right_input == gate.output])
+        output_gate_ops[gate] = output_ops
+    
+    greatest_z = max([gate.output for gate in gates])
+    bad_outputs = set()
+    for gate in gates:
+        if (gate.output[0] == "z" and gate.output != greatest_z and gate.operation != "XOR"): bad_outputs.add(gate.output)
+        
+        inputs = [gate.left_input[0], gate.right_input[0]] 
+        if (gate.output[0] != "z" and "x" not in inputs and "y" not in inputs and gate.operation == "XOR"): bad_outputs.add(gate.output)
+
+        if (not_start_gate(gate)):
+            if (gate.operation == "XOR" and "x" in inputs and "y" in inputs and "XOR" not in output_gate_ops[gate]): bad_outputs.add(gate.output)
+            if (gate.operation == "AND" and "OR" not in output_gate_ops[gate]): bad_outputs.add(gate.output)
+
+    return ','.join(sorted(bad_outputs))
+
+def not_start_gate(gate): 
+    return gate.left_input != "x00" and gate.left_input != "y00" and gate.right_input != "x00" and gate.right_input != "y00"
+
+def get_wires_and_gates(input):
+    initial_wires, gate_text = input.split("\n\n")
+
+    wires = {}
+    for wire in initial_wires.split("\n"):
+        name, value = wire.split(": ")
+        wires[name] = int(value)
+
+    gates = list()
+    for gate in gate_text.split("\n"):
+        left_input, operation, right_input, output = gate.replace("-> ", "").split(" ")
+        gates.append(Gate(left_input, right_input, operation, output))
+
+    return wires, gates
 
 #TESTS
 
@@ -98,3 +129,7 @@ def test_part01_sample():
 def test_part01_input():
     with open("src/inputs/day24.txt", "r") as f:
         assert 59336987801432 == part01(f.read())
+
+def test_part02_input():
+    with open("src/inputs/day24.txt", "r") as f:
+        assert "ctg,dmh,dvq,rpb,rpv,z11,z31,z38" == part02(f.read())
